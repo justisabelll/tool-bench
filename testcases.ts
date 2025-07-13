@@ -87,4 +87,70 @@ export const testCases: TestCase[] = [
     expectedCalls: [],
     allowNoTool: true,
   },
+  {
+    id: 'calculator-simple-math',
+    prompt: 'What is 15 * (23 + 7) / 5? Use a tool if needed.',
+    expectedCalls: [
+      {
+        toolName: 'calculatorTool',
+        argsMatcher: z.object({
+          expression: z
+            .string()
+            .refine(
+              (e) =>
+                e.includes('15') &&
+                e.includes('*') &&
+                e.includes('23') &&
+                e.includes('7') &&
+                e.includes('/5')
+            ),
+        }),
+      },
+    ],
+  },
+  {
+    id: 'control-no-tool-simple-math',
+    prompt: 'What is 2 + 2? Answer directly.',
+    expectedCalls: [],
+    allowNoTool: true,
+  },
+  {
+    id: 'weather-invalid-date',
+    prompt:
+      'What will the weather be in San Francisco on 2025-13-01? Just tell me.',
+    expectedCalls: [
+      {
+        toolName: 'weatherInSfTool',
+        argsMatcher: z.object({
+          date: z.literal('2025-13-01'), // Expect call with invalid date to test arg handling
+        }),
+      },
+    ],
+  },
+  {
+    id: 'search-and-save',
+    prompt:
+      'Search for top AI trends in 2025 and save the summary to /tmp/ai-trends.txt.',
+    expectedCalls: [
+      {
+        toolName: 'searchTool',
+        argsMatcher: z.object({
+          query: z
+            .string()
+            .refine(
+              (q) =>
+                q.includes('AI') && q.includes('trends') && q.includes('2025')
+            ),
+        }),
+      },
+      {
+        toolName: 'fileTool',
+        argsMatcher: z.object({
+          name: z.literal('ai-trends.txt'),
+          path: z.literal('/tmp'),
+          content: z.string().min(20), // Expect non-empty summary
+        }),
+      },
+    ],
+  },
 ];

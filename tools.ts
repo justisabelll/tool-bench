@@ -77,3 +77,33 @@ export const searchTool = tool({
     };
   },
 });
+
+// calculator tool
+export const calculatorTool = tool({
+  description: 'A tool for performing simple arithmetic calculations',
+  parameters: jsonSchema<{ expression: string }>({
+    type: 'object',
+    properties: {
+      expression: {
+        type: 'string',
+        description: 'The math expression to evaluate, e.g., "2 + 3 * 4"',
+      },
+    },
+    required: ['expression'],
+    additionalProperties: false,
+  }),
+  execute: async (params: { expression: string }) => {
+    // Simulate calculation with a small model for realism
+    const results = await generateText({
+      model: openrouter.languageModel('openai/gpt-4o-mini'),
+      system: `You are a calculator API. Evaluate the given math expression and return only the numerical result. No explanations.`,
+      prompt: params.expression,
+    });
+
+    return {
+      success: true,
+      expression: params.expression,
+      result: results.text.trim(),
+    };
+  },
+});
